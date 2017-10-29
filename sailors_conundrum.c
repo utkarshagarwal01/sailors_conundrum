@@ -8,17 +8,18 @@
 // matches ship
 // tobacco money
 // paper crew
+
 // An agent semaphore represents items on the table
 sem_t agent_ready;
 
-// Each smoker semaphore represents when a smoker has the items they need
+// Each sailor semaphore represents when a sailor has the items they need
 sem_t sailor_semaphors[3];
 
-// This is an array of strings describing what each smoker type needs
+// This is an array of strings describing what each sailor type needs
 char* sailor_types[3] = { "ship & money", "ship & crew", "money & crew" };
 
-// This list represents item types that are on the table. This should corrispond
-// with the smoker_types, such that each item is the one the smoker has. So the
+// This list represents item types that are on the table. This should correspond
+// with the sailor_types, such that each item is the one the sailor has. So the
 // first item would be paper, then tobacco, then matches.
 bool items_on_table[3] = { false, false, false };
 
@@ -26,14 +27,14 @@ bool items_on_table[3] = { false, false, false };
 sem_t pusher_semaphores[3];
 
 /**
- * Smoker function, handles waiting for the item's that they need, and then
+ * sailor function, handles waiting for the item's that they need, and then
  * smoking. Repeat this three times
  */
 void* sailor(void* arg)
 {
 	int sailor_id = *(int*) arg;
 	int type_id   = sailor_id % 3;
-
+	int random;
 	// Smoke 3 times
 	for (int i = 0; i < 3; ++i)
 	{
@@ -43,14 +44,22 @@ void* sailor(void* arg)
 		// Wait for the proper combination of items to be on the table
 		sem_wait(&sailor_semaphors[type_id]);
 
-		// Make the cigarette before releasing the agent
+		// Make the ship before releasing the agent
 		printf("\033[0;37msailor %d \033[0;32m<<\033[0m Now getting ready to set sail\n", sailor_id);
-		usleep(rand() % 50000);
+		random = rand() % 10000000;
 		
-                // We're smoking now
+		// printf("%d\n", random);
+		
+		// usleep(2000000);
+		
+        // We're sailing now
 		printf("\033[0;37msailor %d \033[0;37m--\033[0m Now sailing\n", sailor_id);
-                sem_post(&agent_ready);		
-                usleep(rand() % 50000);
+        
+        random = rand() % 10000000;
+        printf("%d\n",random);
+        sem_post(&agent_ready);
+
+        // usleep(2000000);
 	}
 
 	return NULL;
@@ -105,7 +114,7 @@ void* agent(void* arg)
 
 	for (int i = 0; i < 6; ++i)
 	{
-		usleep(rand() % 200000);
+		// usleep(rand() % 200000);
 
 		// Wait for a lock on the agent
 		sem_wait(&agent_ready);
@@ -180,9 +189,9 @@ int main(int argc, char* arvg[])
 	}
 
 	// Agent ID's will be passed to the threads. Allocate the ID's on the stack
-	int agent_ids[6];
+	int agent_ids[3];
 
-	pthread_t agent_threads[6];
+	pthread_t agent_threads[3];
 
 	for (int i = 0; i < 3; ++i)
 	{
@@ -195,7 +204,7 @@ int main(int argc, char* arvg[])
 		}
 	}
 
-	// Make sure all the smokers are done smoking
+	// Make sure all the sailors are done smoking
 	for (int i = 0; i < 6; ++i)
 	{
 		pthread_join(sailor_threads[i], NULL);
