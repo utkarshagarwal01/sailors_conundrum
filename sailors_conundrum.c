@@ -46,20 +46,21 @@ void* sailor(void* arg)
 
 		// Make the ship before releasing the agent
 		printf("\033[0;37msailor %d \033[0;32m<<\033[0m Now getting ready to set sail\n", sailor_id);
-		random = rand() % 10000000;
+		// random = rand() % 10000000;
 		
 		// printf("%d\n", random);
 		
-		// usleep(2000000);
+		usleep(200000);
 		
         // We're sailing now
 		printf("\033[0;37msailor %d \033[0;37m--\033[0m Now sailing\n", sailor_id);
         
-        random = rand() % 10000000;
-        printf("%d\n",random);
+        // random = rand() % 10000000;
+        // printf("%d\n",random);
+        
+        usleep(200000);
         sem_post(&agent_ready);
 
-        // usleep(2000000);
 	}
 
 	return NULL;
@@ -114,18 +115,20 @@ void* agent(void* arg)
 
 	for (int i = 0; i < 6; ++i)
 	{
-		// usleep(rand() % 200000);
+		usleep(200000);
 
 		// Wait for a lock on the agent
 		sem_wait(&agent_ready);
 
 		// Release the items this agent gives out
-		sem_post(&pusher_semaphores[agent_id]);
-		sem_post(&pusher_semaphores[(agent_id + 1) % 3]);
+		
 
 		// Say what type of items we just put on the table
 		printf("\033[0;35m==> \033[0;33mAgent %d giving out %s\033[0;0m\n",
 			agent_id, sailor_types[(agent_id + 2) % 3]);
+		
+		sem_post(&pusher_semaphores[agent_id]);
+		sem_post(&pusher_semaphores[(agent_id + 1) % 3]);
 	}
 
 	return NULL;
