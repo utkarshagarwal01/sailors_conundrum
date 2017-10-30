@@ -5,10 +5,11 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
+#include <vlc/vlc.h>
+
 // matches ship
 // tobacco money
 // paper crew
-
 // An agent semaphore represents items on the table
 sem_t agent_ready;
 
@@ -26,6 +27,40 @@ bool items_on_table[3] = { false, false, false };
 // Each pusher pushes a certian type item, manage these with this semaphore
 sem_t pusher_semaphores[3];
 
+int sailing_sound()
+{
+    libvlc_instance_t *inst;
+    libvlc_media_player_t *mp;
+    libvlc_media_t *m;
+
+    // load the engine
+    inst = libvlc_new(0, NULL);
+
+    // create a file to play
+    m = libvlc_media_new_path(inst, "water.mp3");
+
+    // create a media play playing environment
+    mp = libvlc_media_player_new_from_media(m);
+
+    // release the media now.
+    libvlc_media_release(m);
+
+    // play the media_player
+    libvlc_media_player_play(mp);
+
+    sleep(3); // let it play for 10 seconds
+
+    // stop playing
+    libvlc_media_player_stop(mp);
+
+    // free the memory.
+    libvlc_media_player_release(mp);
+
+    libvlc_release(inst);
+
+
+    return 0;
+}
 /**
  * sailor function, handles waiting for the item's that they need, and then
  * smoking. Repeat this three times
@@ -50,15 +85,15 @@ void* sailor(void* arg)
 		
 		// printf("%d\n", random);
 		
-		usleep(200000);
+		usleep(2000000);
 		
         // We're sailing now
 		printf("\033[0;37msailor %d \033[0;37m--\033[0m Now sailing\n", sailor_id);
-        
+        sailing_sound();
         // random = rand() % 10000000;
         // printf("%d\n",random);
         
-        usleep(200000);
+        usleep(2000000);
         sem_post(&agent_ready);
 
 	}
@@ -115,24 +150,24 @@ void* agent(void* arg)
 
 	for (int i = 0; i < 6; ++i)
 	{
-		usleep(200000);
+		//usleep(200000);
 
 		// Wait for a lock on the agent
 		sem_wait(&agent_ready);
 
-		// Release the items this agent gives out
-		
-
-		// Say what type of items we just put on the table
+		// Say what type of items we want to put on the table
 		printf("\033[0;35m==> \033[0;33mAgent %d giving out %s\033[0;0m\n",
 			agent_id, sailor_types[(agent_id + 2) % 3]);
 		
+		// Release the items this agent gives out
 		sem_post(&pusher_semaphores[agent_id]);
 		sem_post(&pusher_semaphores[(agent_id + 1) % 3]);
 	}
 
 	return NULL;
 }
+
+
 
 /**
  * The main thread handles the agent's arbitration of items.
