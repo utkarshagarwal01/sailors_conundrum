@@ -27,7 +27,7 @@ bool items_on_table[3] = { false, false, false };
 // Each pusher pushes a certian type item, manage these with this semaphore
 sem_t pusher_semaphores[3];
 
-int sailing_sound()
+int sound(char* arg)
 {
     libvlc_instance_t *inst;
     libvlc_media_player_t *mp;
@@ -37,7 +37,7 @@ int sailing_sound()
     inst = libvlc_new(0, NULL);
 
     // create a file to play
-    m = libvlc_media_new_path(inst, "water.mp3");
+    m = libvlc_media_new_path(inst, arg);
 
     // create a media play playing environment
     mp = libvlc_media_player_new_from_media(m);
@@ -80,7 +80,8 @@ void* sailor(void* arg)
 		sem_wait(&sailor_semaphors[type_id]);
 
 		// Make the ship before releasing the agent
-		printf("\033[0;37msailor %d \033[0;32m<<\033[0m Now getting ready to set sail\n", sailor_id);
+		printf("\033[0;37msailor %d \033[0;32m<<\033[0m Now Making ship\n", sailor_id);
+		sound("construction.mp3");
 		// random = rand() % 10000000;
 		
 		// printf("%d\n", random);
@@ -89,7 +90,7 @@ void* sailor(void* arg)
 		
         // We're sailing now
 		printf("\033[0;37msailor %d \033[0;37m--\033[0m Now sailing\n", sailor_id);
-        sailing_sound();
+        sound("water.mp3");
         // random = rand() % 10000000;
         // printf("%d\n",random);
         
